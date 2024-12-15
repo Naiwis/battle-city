@@ -17,6 +17,12 @@ add_subdirectory(external/glfw)
 link_directories(external/glfw/build) # change
 
 # Свяжите ваше приложение с библиотекой GLFW
-target_link_libraries(${PROJECT_NAME} glfw ${CMAKE_THREAD_LIBS_INIT}) # change
-
+target_link_libraries(${PROJECT_NAME} PRIVATE glfw ${CMAKE_THREAD_LIBS_INIT})
+   
 target_include_directories(${PROJECT_NAME} PRIVATE external/glfw/include) # change
+
+add_subdirectory(external/glad)
+target_include_directories(${PROJECT_NAME} PRIVATE external/glad/include)
+target_link_libraries(${PROJECT_NAME} PRIVATE glad) # private
+
+   
