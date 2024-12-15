@@ -1,5 +1,22 @@
 cmake_minimum_required(VERSION 3.31 FATAL_ERROR)
 
-project(BattleCity)
+set(PROJECT_NAME BattleCity)
+project(${PROJECT_NAME})
 
-add_executable(BattleCity src/main.cpp)
+set(CMAKE_CXX_STANDARD 11) # change
+
+add_executable(${PROJECT_NAME} src/main.cpp)
+
+set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
+set(GLFW_BUILD_TESTS OFF CACHE BOOL "" FORCE)
+set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
+set(GLFW_INSTALL OFF CACHE BOOL "" FORCE)
+
+add_subdirectory(external/glfw)
+
+link_directories(external/glfw/build) # change
+
+# Свяжите ваше приложение с библиотекой GLFW
+target_link_libraries(${PROJECT_NAME} glfw ${CMAKE_THREAD_LIBS_INIT}) # change
+
+target_include_directories(${PROJECT_NAME} PRIVATE external/glfw/include) # change
