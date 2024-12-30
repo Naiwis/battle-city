@@ -1,5 +1,6 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
+#include "Renderer/ShaderProgram.h"
 #include <iostream>
 
 int g_windowSizeX = 640;
@@ -90,24 +91,14 @@ int main(void)
 
     glClearColor(1, 1, 0, 1);
 
-    /* Создание идентификатора для вертексного ШЕЙДЕРА */
-    GLuint vs = glCreateShader(GL_VERTEX_SHADER);
-    glShaderSource(vs, 1, &vertex_shader, nullptr);
-    glCompileShader(vs);
-
-    /* Создание идентификатора для фрагментного ШЕЙДЕРА */
-    GLuint fs = glCreateShader(GL_FRAGMENT_SHADER);
-    glShaderSource(fs, 1, &fragment_shader, nullptr);
-    glCompileShader(fs);
-
-    /* Создание и настройка шейдерной программы */
-    GLuint shader_programm = glCreateProgram();
-    glAttachShader(shader_programm, vs);
-    glAttachShader(shader_programm, fs);
-    glLinkProgram(shader_programm);
-
-    glDeleteShader(vs);
-    glDeleteShader(fs);
+    std::string vertexShader(vertex_shader);
+    std::string fragmentShader(fragment_shader);
+    Renderer::ShaderProgram shaderProgram (vertexShader, fragmentShader);
+    if (!shaderProgram.isCompiled())
+    {
+        std::cerr << "Can't create shader program!" << std::endl;
+        return -1;
+    }
 
     /* Создание идентификатора для вершинного( вертексного ) буфера */
     GLuint points_vbo = 0;
@@ -123,7 +114,7 @@ int main(void)
 
     GLuint vao = 0;
     glGenVertexArrays(1, &vao);
-    glBindVertexArray(vao);
+    glBindVertexArray(vao); // команда выполняется с текущим буфером
 
     glEnableVertexAttribArray(0);
     glBindBuffer(GL_ARRAY_BUFFER, points_vbo);
@@ -139,16 +130,16 @@ int main(void)
         /* Render here */
         glClear(GL_COLOR_BUFFER_BIT);
 
-        glUseProgram(shader_programm);
+        shaderProgram.use();
         glBindVertexArray(vao);
-        glDrawArrays(GL_TRIANGLES, 0, 3);
+        glDrawArrays(GL_TRIANGLES, 0, 3); 
         /* Swap front and back buffers */
         glfwSwapBuffers(pWindow);
 
         /* Poll for and process events */
         glfwPollEvents();
     }
-    glDeleteProgram(shader_programm);
+
     glfwTerminate();
     return 0;
 }
