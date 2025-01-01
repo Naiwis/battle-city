@@ -82,7 +82,7 @@ int main(int argc, char** argv)
             return -1;
         }
 
-        resourceManager.loadtexture("DefaultTexture", "res/textures/map_16x16.png");
+        resourceManager.loadTexture("DefaultTexture", "res/textures/map_16x16.png");
 
         /* Создание идентификатора для вершинного( вертексного ) буфера */
         GLuint points_vbo = 0;
