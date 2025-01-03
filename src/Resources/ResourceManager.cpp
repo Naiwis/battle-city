@@ -70,13 +70,6 @@ std::shared_ptr <Renderer::ShaderProgram> ResourceManager::getShaderProgram(cons
 	std::cerr << "Can't find the shader program" << shaderName << std::endl;
 	return nullptr;
 }
-/*
-					///////////		////////	//   //		////	  /////////		//	 //		///////		//		//
-						//			//			// //	  //	//		 //			 // //		//    //	//		//
-						//			///////		///		  //			 //			   //		//////		//////	//
-						//			//			// //	  //    //       //		   // //		//			//   //	//
-						//			///////		//  //		////		 //			///			//			//////	//
-*/
 
 std::shared_ptr <Renderer::Texture2D> ResourceManager::loadTexture(const std::string& textureName, const std::string& texturePath)
 {
