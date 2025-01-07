@@ -6,7 +6,26 @@
 #include <iostream>
 #include "Resources/ResourceManager.h"
 #include "Renderer/Texture2D.h"
+#include "Renderer/Sprite.h"
 
+
+GLfloat point[] = {
+     0.0f,  50.f, 0.0f,
+     50.f, -50.f, 0.0f,
+    -50.f, -50.f, 0.0f
+};
+
+GLfloat colors[] = {
+    1.0f, 0.0f, 0.0f,
+    0.0f, 1.0f, 0.0f,
+    0.0f, 0.0f, 1.0f
+};
+
+GLfloat texCoord[] = {
+    0.5f, 1.0f,
+    1.0f, 0.0f,
+    0.0f, 0.0f
+};
 
 glm::ivec2 g_windowSize(640, 480);
 
@@ -19,39 +38,18 @@ void glfwWindowSizeCallback(GLFWwindow* pWindow, int width, int height)
 
 void glfwKeyCallback(GLFWwindow* pWindow, int key, int scancode, int action, int mode)
 {
-    if (key == GLFW_KEY_SPACE && action == GLFW_PRESS)
+    if (key == GLFW_KEY_SPACE && action == GLFW_PRESS) // GLFW_KEY_ESCAPE
+    {
         glfwSetWindowShouldClose(pWindow, GL_TRUE);
+    }
 }
-
-
 
 int main(int argc, char** argv)
 {
-    GLfloat point[] =
-    {
-        0.0f, 0.5f, 0.0f,
-        50.f, -50.f, 0.0f,
-        -50.f, -50.f, 0.0f
-    };
-
-    GLfloat colors[] =
-    {
-        1.0f, 0.0f, 0.0f,
-        0.0f, 1.0f, 0.0f,
-        0.0f, 0.0f, 1.0f
-    };
-
-    GLfloat texCoord[] =
-    {
-        0.5f, 1.0f,
-        1.0f, 0.0f,
-        0.0f, 0.0f
-    };
-
     /* Initialize the library */
     if (!glfwInit())
     {
-        std::cout << "glfwInit failed" << std::endl;
+        std::cout << "glfwInit failed!" << std::endl;
         return -1;
     }
 
@@ -60,13 +58,14 @@ int main(int argc, char** argv)
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
     /* Create a windowed mode window and its OpenGL context */
-    GLFWwindow* pWindow = glfwCreateWindow(g_windowSize.x, g_windowSize.y, "Battle-City", nullptr, nullptr);
+    GLFWwindow* pWindow = glfwCreateWindow(g_windowSize.x, g_windowSize.y, "Battle City", nullptr, nullptr);
     if (!pWindow)
     {
-        std::cout << "glfwCreateWindow failed" << std::endl;
+        std::cout << "glfwCreateWindow failed!" << std::endl;
         glfwTerminate();
         return -1;
     }
+
     glfwSetWindowSizeCallback(pWindow, glfwWindowSizeCallback);
     glfwSetKeyCallback(pWindow, glfwKeyCallback);
 
@@ -75,16 +74,17 @@ int main(int argc, char** argv)
 
     if (!gladLoadGL())
     {
-        std::cout << "Can not load GLAD!" << std::endl;
-        return -1;
+        std::cout << "Can't load GLAD!" << std::endl;
     }
 
-    std::cout << "Randerer: " << glGetString(GL_RENDERER) << std::endl;
+    std::cout << "Renderer: " << glGetString(GL_RENDERER) << std::endl;
     std::cout << "OpenGL version: " << glGetString(GL_VERSION) << std::endl;
 
     glClearColor(1, 1, 0, 1);
+
     {
         ResourceManager resourceManager(argv[0]);
+
         auto pDefaultShaderProgram = resourceManager.loadShaders("DefaultShader", "res/shaders/vertex.txt", "res/shaders/fragment.txt");
         if (!pDefaultShaderProgram)
         {
@@ -92,15 +92,22 @@ int main(int argc, char** argv)
             return -1;
         }
 
+        auto pSpriteShaderProgram = resourceManager.loadShaders("SpriteShader", "res/shaders/vSprite.txt", "res/shaders/fSprite.txt");
+        if (!pSpriteShaderProgram)
+        {
+            std::cerr << "Can't create shader program: " << "SpriteShader" << std::endl;
+            return -1;
+        }
         auto tex = resourceManager.loadTexture("DefaultTexture", "res/textures/map_16x16.png");
 
-        /* Создание идентификатора для вершинного( вертексного ) буфера */
+        auto pSprite = resourceManager.loadSprite("NewSprite", "DefaultTexture", "SpriteShader", 50, 100);
+        pSprite->setPosition(glm::vec2(300, 100));
+
         GLuint points_vbo = 0;
         glGenBuffers(1, &points_vbo);
         glBindBuffer(GL_ARRAY_BUFFER, points_vbo);
-        glBufferData(GL_ARRAY_BUFFER, sizeof(point), point, GL_STATIC_DRAW); // команда выполняется с текущим буфером
+        glBufferData(GL_ARRAY_BUFFER, sizeof(point), point, GL_STATIC_DRAW);
 
-        /* Создание идентификатора для фрагментного буфера */
         GLuint colors_vbo = 0;
         glGenBuffers(1, &colors_vbo);
         glBindBuffer(GL_ARRAY_BUFFER, colors_vbo);
@@ -113,7 +120,7 @@ int main(int argc, char** argv)
 
         GLuint vao = 0;
         glGenVertexArrays(1, &vao);
-        glBindVertexArray(vao); // команда выполняется с текущим буфером
+        glBindVertexArray(vao);
 
         glEnableVertexAttribArray(0);
         glBindBuffer(GL_ARRAY_BUFFER, points_vbo);
@@ -131,14 +138,18 @@ int main(int argc, char** argv)
         pDefaultShaderProgram->setInt("tex", 0);
 
         glm::mat4 modelMatrix_1 = glm::mat4(1.f);
-        modelMatrix_1 = glm::translate(modelMatrix_1, glm::vec3(100.f, 200.f, 0.f));
+        modelMatrix_1 = glm::translate(modelMatrix_1, glm::vec3(50.f, 50.f, 0.f));
 
         glm::mat4 modelMatrix_2 = glm::mat4(1.f);
-        modelMatrix_2 = glm::translate(modelMatrix_2, glm::vec3(590.f, 200.f, 0.f));
+        modelMatrix_2 = glm::translate(modelMatrix_2, glm::vec3(590.f, 50.f, 0.f));
 
         glm::mat4 projectionMatrix = glm::ortho(0.f, static_cast<float>(g_windowSize.x), 0.f, static_cast<float>(g_windowSize.y), -100.f, 100.f);
 
         pDefaultShaderProgram->setMatrix4("projectionMat", projectionMatrix);
+
+        pSpriteShaderProgram->use();
+        pSpriteShaderProgram->setInt("tex", 0);
+        pSpriteShaderProgram->setMatrix4("projectionMat", projectionMatrix);
 
         /* Loop until the user closes the window */
         while (!glfwWindowShouldClose(pWindow))
@@ -147,7 +158,6 @@ int main(int argc, char** argv)
             glClear(GL_COLOR_BUFFER_BIT);
 
             pDefaultShaderProgram->use();
-            //pDefaultShaderProgram->setInt("tex", 0); // added
             glBindVertexArray(vao);
             tex->bind();
 
@@ -156,6 +166,8 @@ int main(int argc, char** argv)
 
             pDefaultShaderProgram->setMatrix4("modelMat", modelMatrix_2);
             glDrawArrays(GL_TRIANGLES, 0, 3);
+
+            pSprite->render();
             /* Swap front and back buffers */
             glfwSwapBuffers(pWindow);
 
@@ -163,7 +175,6 @@ int main(int argc, char** argv)
             glfwPollEvents();
         }
     }
-    
 
     glfwTerminate();
     return 0;
